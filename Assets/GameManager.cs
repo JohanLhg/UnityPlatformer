@@ -4,9 +4,14 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
 
     public static GameManager Instance;
+    public Rigidbody2D player;
+    public PlayerHealthBehavior playerHealthBehavior;
+    public PlayerMovementBehavior playerMovementBehavior;
     public TMP_Text FruitText;
+    public int MaxHealth;
 
-    private int fruitCounter = 0;
+    private int Score = 0;
+    private int health;
 
     private void Awake() {
         if (Instance != null) {
@@ -15,18 +20,18 @@ public class GameManager : MonoBehaviour {
         }
         Instance = this;
     }
-
-    // Start is called before the first frame update
+    
     void Start() {
-        FruitText.text = $"Fruits : {fruitCounter}";
+        FruitText.text = $"Score : {Score}";
+        health = MaxHealth;
     }
 
-    // Update is called once per frame
-    void Update() {
+    public void AddScore(int score) {
+        Score += score;
+        FruitText.text = $"Score : {Score}";
     }
 
-    public void IncrementFruitCounter() {
-        fruitCounter ++;
-        FruitText.text = $"Fruits : {fruitCounter}";
+    public void TakeDamage() {
+        
     }
 }

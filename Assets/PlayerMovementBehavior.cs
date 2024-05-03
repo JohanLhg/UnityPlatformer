@@ -2,9 +2,6 @@ using System;
 using UnityEngine;
 
 public class PlayerMovementBehavior : MonoBehaviour {
-
-    public Rigidbody2D Body;
-    public SpriteRenderer sprite;
     public Transform RaycastBottom;
     public Transform RaycastBottomRight;
     public Transform RaycastCenterRight;
@@ -15,55 +12,79 @@ public class PlayerMovementBehavior : MonoBehaviour {
     public LayerMask GroundMask;
     public float Speed;
     public float JumpForce;
-    public Animator Animator;
+
+    private Rigidbody2D body;
+    private SpriteRenderer sprite;
+    private Animator animator;
 
     private static float rayCastSideDistance = 0.25f;
     private static float rayCastJumpDistance = 0.01f;
 
+    private bool hasDoubleJump = true;
 
-    // Start is called before the first frame update
     void Start() {
+        body = GetComponent<Rigidbody2D>();
+        sprite = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
     }
 
-    // Update is called once per frame
     void Update() {
         bool isWallGrinding = false;
 
         if (Input.GetKey(KeyCode.LeftShift) && !IsGrounded() && (HasWallOnLeft() || HasWallOnRight())) {
-            Body.velocityY = -0.1f;
+            body.velocityY = -0.1f;
             isWallGrinding = true;
             sprite.flipX = HasWallOnLeft();
+        }
+
+        if (body.velocityY < 0) {
+            animator.SetBool("isDoubleJumping", false);
+        }
+        if (IsGrounded() || isWallGrinding) {
+            animator.SetBool("isDoubleJumping", false);
+            hasDoubleJump = true;
         }
 
         if (IsGoingRight()) {
             sprite.flipX = false;
             if (!HasWallOnRight()) {
                 if (Input.GetKey(KeyCode.LeftShift))
-                    Body.velocityX = Speed * 2;
-                else Body.velocityX = Speed;
+                    body.velocityX = Speed * 2;
+                else body.velocityX = Speed;
             }
         }
         else if (IsGoingLeft()) {
             sprite.flipX = true;
             if (!HasWallOnLeft()) {
                 if (Input.GetKey(KeyCode.LeftShift))
-                    Body.velocityX = -Speed * 2;
-                else Body.velocityX = -Speed;
+                    body.velocityX = -Speed * 2;
+                else body.velocityX = -Speed;
             }
         }
 
-        if (IsJumping() && (IsGrounded() || isWallGrinding)) {
-            if (IsGrounded()) Body.AddForce(Vector2.up * JumpForce);
+        if (IsJumping() && (IsGrounded() || isWallGrinding || hasDoubleJump)) {
+            // Simple Jump
+            if (IsGrounded()) {
+                body.AddForceY(JumpForce);
+            }
+            // Wall Jump
             else if (isWallGrinding) {
-                Body.AddForce(Vector2.up * JumpForce);
-                if (HasWallOnLeft()) Body.AddForce(Vector2.right * (JumpForce / 2));
-                else Body.AddForce(Vector2.left * (JumpForce / 2));
+                body.AddForceY(JumpForce);
+                if (HasWallOnLeft()) body.AddForceX(JumpForce / 2);
+                else body.AddForce(Vector2.left * (JumpForce / 2));
+            } 
+            // Double Jump
+            else {
+                animator.SetBool("isDoubleJumping", true);
+                hasDoubleJump = false;
+                body.velocityY = 0;
+                body.AddForceY(JumpForce * .8f);
             }
         }
 
-        Animator.SetFloat("velocityX", Math.Abs(Body.velocityX));
-        Animator.SetFloat("velocityY", Body.velocityY);
-        Animator.SetBool("isWallGrinding", isWallGrinding);
+        animator.SetFloat("velocityX", Math.Abs(body.velocityX));
+        animator.SetFloat("velocityY", body.velocityY);
+        animator.SetBool("isWallGrinding", isWallGrinding);
     }
 
     private bool IsGoingRight() {

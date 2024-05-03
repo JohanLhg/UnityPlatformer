@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: '[Fruit] Cherry'
       objectReference: {fileID: 0}
+    - target: {fileID: 7095697623809980623, guid: 5cf588b441bea864a9c49024846bbeac, type: 3}
+      propertyPath: Data
+      value: 
+      objectReference: {fileID: 11400000, guid: ba990e1008be246488456e3ba2bf3959, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
